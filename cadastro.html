@@ -19,7 +19,53 @@
     </header>
 
     <main>
-        </main>
+        <main>
+    <div class="form-container">
+        <h2>📝 Cadastrar Nova Necessidade</h2>
+        <div id="message" class="message"></div>
+        <form id="form-necessidade">
+            <div class="form-group">
+                <label for="nome-instituicao">🏢 Nome da Instituição *</label>
+                <input type="text" id="nome-instituicao" placeholder="Ex: ONG Esperança" required>
+            </div>
+            <div class="form-group">
+                <label for="tipo-ajuda">📋 Tipo de Ajuda *</label>
+                <select id="tipo-ajuda" required>
+                    <option value="">Selecione o tipo de ajuda...</option>
+                    <option value="Educação">🎓 Educação</option>
+                    <option value="Saúde">🏥 Saúde</option>
+                    <option value="Meio Ambiente">🌱 Meio Ambiente</option>
+                    <option value="Doação de Alimentos">🍽️ Doação de Alimentos</option>
+                    <option value="Doação de Roupas">👕 Doação de Roupas</option>
+                    <option value="Outros">🤝 Outros</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="titulo">📌 Título da Necessidade *</label>
+                <input type="text" id="titulo" placeholder="Ex: Ajuda com reforço escolar" required>
+            </div>
+            <div class="form-group">
+                <label for="descricao">📝 Descrição Detalhada *</label>
+                <textarea id="descricao" placeholder="Descreva a necessidade..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="cep">📍 CEP *</label>
+                <input type="text" id="cep" placeholder="00000-000" maxlength="9" required>
+            </div>
+            <div class="form-group">
+                <label for="cidade">🏙️ Cidade</label>
+                <input type="text" id="cidade" readonly>
+            </div>
+            <div class="form-group">
+                <label for="contato">📞 Contato *</label>
+                <input type="text" id="contato" placeholder="E-mail ou telefone" required>
+            </div>
+            <button type="submit" class="btn btn-primary">✅ Cadastrar Necessidade</button>
+        </form>
+    </div>
+</main>
+
+    </main>
 
     <footer>
         <p>&copy; 2024 Plataforma Rede do Bem - Conectando corações que querem ajudar ❤️</p>

@@ -46,3 +46,60 @@ function addDemoData() {
 }
 
 addDemoData();
+
+
+const Utils = {
+    showMessage(elementId, message, type = 'success') {
+        const messageEl = document.getElementById(elementId);
+        if (messageEl) {
+            messageEl.textContent = message;
+            messageEl.className = `message ${type}`;
+            messageEl.style.display = 'block';
+            setTimeout(() => { messageEl.style.display = 'none'; }, 5000);
+        }
+    }
+};
+
+
+const FormManager = {
+    init() {
+        const form = document.getElementById('form-necessidade');
+        if (!form) return;
+        form.addEventListener('submit', this.handleSubmit.bind(this));
+    },
+
+    handleSubmit(event) {
+        event.preventDefault();
+        try {
+            const necessidade = {
+                nomeInstituicao: document.getElementById('nome-instituicao').value.trim(),
+                tipoAjuda: document.getElementById('tipo-ajuda').value,
+                titulo: document.getElementById('titulo').value.trim(),
+                descricao: document.getElementById('descricao').value.trim(),
+                cep: document.getElementById('cep').value.trim(),
+                cidade: document.getElementById('cidade').value.trim(),
+                contato: document.getElementById('contato').value.trim()
+            };
+
+            if (!necessidade.nomeInstituicao || !necessidade.titulo || !necessidade.descricao || !necessidade.contato) {
+                throw new Error('Por favor, preencha todos os campos obrigatórios.');
+            }
+
+            DataManager.saveNecessidade(necessidade);
+            Utils.showMessage('message', 'Necessidade cadastrada com sucesso!', 'success');
+            event.target.reset();
+
+            setTimeout(() => { window.location.href = 'necessidades.html'; }, 2000);
+
+        } catch (error) {
+            Utils.showMessage('message', error.message, 'error');
+        }
+    }
+};
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.pathname.includes('cadastro.html')) {
+        FormManager.init();
+    }
+});

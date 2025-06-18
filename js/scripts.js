@@ -103,3 +103,61 @@ document.addEventListener('DOMContentLoaded', () => {
         FormManager.init();
     }
 });
+
+
+
+
+
+
+
+
+
+
+const NecessidadesManager = {
+    init() {
+        this.loadNecessidades();
+    },
+
+    loadNecessidades() {
+        const necessidades = DataManager.getAllNecessidades();
+        this.renderNecessidades(necessidades);
+    },
+
+    renderNecessidades(necessidades) {
+        const container = document.getElementById('cards-container');
+        if (necessidades.length === 0) {
+            container.innerHTML = `
+                <div class="card">
+                    <h3>Nenhuma necessidade encontrada</h3>
+                    <p class="description">Seja o primeiro a cadastrar uma necessidade!</p>
+                    <a href="cadastro.html" class="btn btn-primary">➕ Cadastrar</a>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = necessidades.map(n => `
+            <div class="card">
+                <span class="type-badge">${n.tipoAjuda}</span>
+                <h3>${n.titulo}</h3>
+                <p class="institution">🏢 ${n.nomeInstituicao}</p>
+                <p class="description">${n.descricao}</p>
+                <p class="location">📍 ${n.cidade}</p>
+                <p class="contact">📞 <strong>${n.contato}</strong></p>
+            </div>
+        `).join('');
+    }
+};
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const page = window.location.pathname;
+
+    if (page.includes('cadastro.html')) {
+        FormManager.init();
+    } else if (page.includes('necessidades.html')) {
+        NecessidadesManager.init();
+    }
+    
+    addDemoData();
+});

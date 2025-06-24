@@ -1,19 +1,20 @@
 
 const DataManager = {
-    STORAGE_KEY: 'rede_do_bem_necessidades',
-
-    saveNecessidade(necessidade) {
+    filterNecessidades(searchTerm = '', tipo = 'todos') {
         const necessidades = this.getAllNecessidades();
-        necessidade.id = Date.now().toString();
-        necessidade.dataCadastro = new Date().toISOString();
-        necessidades.push(necessidade);
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(necessidades));
+        
+        return necessidades.filter(n => {
+            const searchTermLower = searchTerm.toLowerCase();
+            const matchesSearch = !searchTerm || 
+                n.titulo.toLowerCase().includes(searchTermLower) ||
+                n.descricao.toLowerCase().includes(searchTermLower) ||
+                n.nomeInstituicao.toLowerCase().includes(searchTermLower);
+            
+            const matchesTipo = tipo === 'todos' || n.tipoAjuda === tipo;
+            
+            return matchesSearch && matchesTipo;
+        });
     },
-
-    getAllNecessidades() {
-        const data = localStorage.getItem(this.STORAGE_KEY);
-        return data ? JSON.parse(data) : [];
-    }
 };
 
 
@@ -65,36 +66,23 @@ const FormManager = {
     init() {
         const form = document.getElementById('form-necessidade');
         if (!form) return;
+        
+        const cepInput = document.getElementById('cep');
+        cepInput.addEventListener('blur', this.handleCEPBlur.bind(this));
         form.addEventListener('submit', this.handleSubmit.bind(this));
     },
 
-    handleSubmit(event) {
-        event.preventDefault();
+    async handleCEPBlur(event) {
+        const cep = event.target.value;
+        if (!cep) return;
+
         try {
-            const necessidade = {
-                nomeInstituicao: document.getElementById('nome-instituicao').value.trim(),
-                tipoAjuda: document.getElementById('tipo-ajuda').value,
-                titulo: document.getElementById('titulo').value.trim(),
-                descricao: document.getElementById('descricao').value.trim(),
-                cep: document.getElementById('cep').value.trim(),
-                cidade: document.getElementById('cidade').value.trim(),
-                contato: document.getElementById('contato').value.trim()
-            };
-
-            if (!necessidade.nomeInstituicao || !necessidade.titulo || !necessidade.descricao || !necessidade.contato) {
-                throw new Error('Por favor, preencha todos os campos obrigatórios.');
-            }
-
-            DataManager.saveNecessidade(necessidade);
-            Utils.showMessage('message', 'Necessidade cadastrada com sucesso!', 'success');
-            event.target.reset();
-
-            setTimeout(() => { window.location.href = 'necessidades.html'; }, 2000);
-
+            const endereco = await CEPManager.buscarCEP(cep);
+            document.getElementById('cidade').value = endereco.cidade;
         } catch (error) {
             Utils.showMessage('message', error.message, 'error');
         }
-    }
+    },
 };
 
 
@@ -104,49 +92,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+const CEPManager = {
+    async buscarCEP(cep) {
+        const cleanCEP = cep.replace(/\D/g, '');
+        if (cleanCEP.length !== 8) throw new Error('CEP inválido');
 
-
-
-
-
-
-
-
+        try {
+            const response = await fetch(`https://viacep.com.br/ws/${cleanCEP}/json/`);
+            const data = await response.json();
+            if (data.erro) throw new Error('CEP não encontrado');
+            return { cidade: data.localidade || '' };
+        } catch (error) {
+            throw new Error('Erro ao buscar CEP.');
+        }
+    }
+};
 
 const NecessidadesManager = {
     init() {
+        this.setupFilters();
         this.loadNecessidades();
     },
 
-    loadNecessidades() {
-        const necessidades = DataManager.getAllNecessidades();
-        this.renderNecessidades(necessidades);
+    setupFilters() {
+        document.getElementById('search-input')?.addEventListener('input', () => this.loadNecessidades());
+        document.getElementById('filter-tipo')?.addEventListener('change', () => this.loadNecessidades());
     },
 
-    renderNecessidades(necessidades) {
-        const container = document.getElementById('cards-container');
-        if (necessidades.length === 0) {
-            container.innerHTML = `
-                <div class="card">
-                    <h3>Nenhuma necessidade encontrada</h3>
-                    <p class="description">Seja o primeiro a cadastrar uma necessidade!</p>
-                    <a href="cadastro.html" class="btn btn-primary">➕ Cadastrar</a>
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = necessidades.map(n => `
-            <div class="card">
-                <span class="type-badge">${n.tipoAjuda}</span>
-                <h3>${n.titulo}</h3>
-                <p class="institution">🏢 ${n.nomeInstituicao}</p>
-                <p class="description">${n.descricao}</p>
-                <p class="location">📍 ${n.cidade}</p>
-                <p class="contact">📞 <strong>${n.contato}</strong></p>
-            </div>
-        `).join('');
-    }
+    loadNecessidades() {
+        const searchTerm = document.getElementById('search-input')?.value || '';
+        const tipoFilter = document.getElementById('filter-tipo')?.value || 'todos';
+        
+        const necessidades = DataManager.filterNecessidades(searchTerm, tipoFilter);
+        this.renderNecessidades(necessidades);
+    },
 };
 
 
@@ -161,3 +140,4 @@ document.addEventListener('DOMContentLoaded', () => {
     
     addDemoData();
 });
+
